@@ -1495,27 +1495,15 @@
 					<xsl:value-of select="$l/gir:class[@name=$t]/@glib:type-name"/>
 				</xsl:attribute>
 			</xsl:when>
-			<xsl:when test="$l/gir:record[@name=$t]">
-				<xsl:choose>
-					<xsl:when
-						test="gir:type/@c:type and concat($l/gir:record[@name=$t]/@c:type,'*') != string(gir:type/@c:type)">
-						<xsl:attribute name="warning">type does not match c:type -
-								record:<xsl:value-of select="$l/@name"/>/<xsl:value-of select="$t"
-							/>. '<xsl:value-of select="$l/gir:record[@name=$t]/@c:type"/>*' ==
-								'<xsl:value-of select="gir:type/@c:type"/>'(ctype)</xsl:attribute>
-						<xsl:attribute name="ctype">
-							<xsl:call-template name="map-ctype">
-								<xsl:with-param name="ctype" select="gir:type/@c:type"/>
-							</xsl:call-template>
-						</xsl:attribute>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:attribute name="ctype"><xsl:call-template name="map-ctype"
-									><xsl:with-param name="ctype"
-									select="$l/gir:record[@name=$t]/@c:type"
-							/></xsl:call-template>*</xsl:attribute>
-					</xsl:otherwise>
-				</xsl:choose>
+			<xsl:when test="$l/gir:record[@name=$t]">					
+				<xsl:attribute name="ctype"><xsl:call-template name="map-ctype"
+							><xsl:with-param name="ctype"
+							select="$l/gir:record[@name=$t]/@c:type"
+					/></xsl:call-template>
+					<!-- If it is a pointer, we need to add the additional * -->
+					<xsl:if test="contains(gir:type/@c:type, '*')">*<xsl:value-of select="substring-after(gir:type/@c:type, '*')"/></xsl:if>
+				</xsl:attribute>
+				
 				<xsl:choose>
 					<xsl:when test="$l/gir:record[@name=$t]/@glib:type-name">
 						<xsl:attribute name="gtype">
@@ -1532,7 +1520,6 @@
 						<xsl:attribute name="warning">missing glib:type-name</xsl:attribute>
 					</xsl:otherwise>
 				</xsl:choose>
-				<xsl:attribute name="warning">missing glib:type-name</xsl:attribute>
 			</xsl:when>
 			<xsl:when test="$l/gir:union[@name=$t]">
 				<xsl:attribute name="ctype"><xsl:value-of select="$l/gir:union[@name=$t]/@c:type"
